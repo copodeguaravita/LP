@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+    <!-- titulo -->
+    <head>
+        <link rel="icon" 
+        type="image/jpg"
+        href="imagens/misc/beer3.png" />
+        <title>Pega Breja</title>
+        <meta charset="UTF-8">
+    </head>
+
+    <!-- criando a estilização do canvas -->
+    <style type="text/css">
+		canvas	
+		{
+            border: 1px solid black ;
+            position: absolute;
+            background-color: transparent;
+		}
+
+	</style>
+    
+    <!-- conteudo com javascript para funcionamento do jogo -->
+    <script type="text/javascript">
+        // quando a pagina carrega, começa a carregar tudo necessario para o funcionamento do jogo
+        window.onload = function(){
+            /************************
+            *************************
+            FUNCOES RELATIVAS AO JOGO
+            *************************
+            ************************/
+
+             //cria o estudante e as bebidas para funcionamento do jogo, e chama a funcao responsavel por comecar
+            function main(){
+                contextBack.font = "23px Franklin Gothic Medium";
+                contextBack.fillStyle = "WHITE";
+                estudante = new Estudante();
+                bebidas = [];
+
+                for(let i = 0; i < numBebidas; i++)
+                {
+                    //cria a bebida e poe na lista
+                    let bebida = new Bebida();
+                    bebida.escolheBebida();
+                    bebidas.push(bebida);
+                }
+                
+                iniciaJogo();
+            }
+            
+            //comeca o jogo
+            function iniciaJogo()
+            {
+                //chama a funcao de update para conferimento de continuacao
+                updateJogo();
+                window.requestAnimationFrame(drawGame);
+            }
+
+            //confere se o jogo deve continuar
+            function updateJogo()
+            {
+                //toca a musica de fundo
+                musica.play();
+                //se a embriaguez chegar em um valor menor ou igual a 0, o jogo deve acabar
+                if(estudante.embriaguez <= 0)
+                {
+                    estudante.fimDeJogo = true;
+                }
+                
+                //chama a funcao de bebida caindo
+                for(let j = 0; j < bebidas.length; j++)
+                {
+                    bebidas[j].Caiu();
+                }
+                timer = window.setTimeout(updateJogo, 30);
+            }
+            
+            //renderiza o jogo
+            function drawGame()
+            {
+                //enquanto o jogo tiver que continuar, são renderizadas as imagens e os textos de pontuacao e embriaguez
+                if(estudante.fimDeJogo == false)
+                {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    contextBack.clearRect(0, 0, canvasBack.width, canvasBack.height);
+
+                    contextBack.drawImage(background, 0, 0);
+                    estudante.render();
+
+                    for(let j = 0; j < bebidas.length; j++)
+                    {
+                        bebidas[j].render();
+                    }
+                    contextBack.fillText("PONTOS: " + estudante.pontuacao, 275, 50);
+                    contextBack.fillText("EMBRIAGUEZ: " + estudante.embriaguez + "%", 600, 50);
+                }
+                //se o jogo acabar
+                else
+                {
+                    //acaba com a lista de bebidas
+                    for(let i = 0; i < numBebidas; i++)
+                    {
+                        bebidas.pop();
+                    }
+
+                    //coloca a imagem do final, falando para pressionar enter para reiniciar
+                    let final_background = new Image();
+                    final_background.src = 'imagens/misc/final-background-image.png';
+                    contextBack.drawImage(final_background, 0, 0);
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                }
+                    
+                window.requestAnimationFrame(drawGame);
+            }
+
+
+
+
+
+            
+            /***********************************
+            ************************************
+            VARIAVEIS RELATIVAS AO CANVAS E SONS
+            ************************************
+            ***********************************/
+
+            //variaveis para manipular canvas
+            let canvas = document.getElementById("canvas");
+            let context = canvas.getContext("2d");
+            let canvasBack = document.getElementById("backgroundCanvas");
+            let contextBack = canvasBack.getContext("2d");
+            
+            //variavel para controlar o update do jogo
+            let timer;
+            
+            //musica de fundo
+            let musica = new Audio();
+            musica.src = 'sons/funk-pretadocabelocacheado.mp3';
+            musica.loop = true;
+
+            //imagem de fundo
+            let background = new Image();
+            background.src = 'imagens/misc/background-image.png';
+
+            //som de quando pega a bebida
+            let listaSonsBebeu = [];
+            let contadorSomBebeu = 0;
+            for(let i = 0; i < 5; i++){
+                let somBebeu = new Audio();
+                somBebeu.src = 'sons/swallow.wav';
+                listaSonsBebeu.push(somBebeu);
+            }
+            
+            //som de quando a bebida cai
+            let listaSonsCaiu = [];
+            let contadorSomCaiu = 0;
+            for(let i = 0; i < 5; i++)
+            {
+                let somCaiu = new Audio();
+                somCaiu.src = 'sons/glass.mp3';
+                listaSonsCaiu.push(somCaiu);
+            }
+            
+            let estudante;
+            let bebidas = [];
+            let numBebidas = 10;
+
+
+
+
+
+
+            
+            /*****************************
+            ******************************
+            FUNCOES RELATIVAS AO ESTUDANTE
+            ******************************
+            ******************************/
+           
+            //criacao das funcoes auxiliares e variaveis relativas ao estudante
+            function Estudante()
+            {
+                this.fimDeJogo = false;
+                this.pontuacao = 0;
+                this.embriaguez = 100; //qtd de vidas
+                this.imagemLargura = 150;
+                this.imagemAltura = 140;
+                this.velocidadeEstudante = 10;
+                this.x = canvas.width / 2;
+                this.y = canvas.height - this.imagemAltura;
+                this.imagemEstudante = new Image();
+                this.imagemEstudante.src = 'imagens/misc/studentUp4.png';
+                
+                //renderizando o estudante
+                this.render = function()
+                {
+                    context.drawImage(this.imagemEstudante, this.x, this.y);
+                }
+                
+                //movimentacao para a esquerda
+                this.moveLeft = function()
+                {
+                    if(this.x > 0)
+                    {
+                        this.x -= this.velocidadeEstudante;
+                    }
+                }
+                
+                //movimentacao para a direita
+                this.moveRight = function()
+                {
+                    if(this.x < canvas.width - this.imagemLargura)
+                    {
+                        this.x += this.velocidadeEstudante;
+                    }
+                }
+            }
+        
+
+
+
+
+            
+            /***************************
+            ****************************
+            FUNCOES RELATIVAS AS BEBIDAS
+            ****************************
+            ***************************/
+
+            //criacao das funcoes auxiliares e variaveis relativas as bebidas
+            function Bebida()
+            {
+                this.bebidaNumero = Math.floor(Math.random() * 6);
+                this.bebidaTipo = "";
+                this.bebidaPontuacao = 0;
+                this.bebidaLargura = 50;
+                this.bebidaAltura = 50;
+                this.bebidaImagem = new Image();
+                this.bebidaVelocidade = Math.floor(Math.random() * 4 + 1);
+                this.x = Math.random() * (canvas.width - this.bebidaLargura);
+                this.y = Math.random() * - canvas.height - this.bebidaAltura;
+    
+                
+                //com base na bebida escolhida na função de mudar o estado, atualiza a pontuacao que pode ser recebida por aquela bebida e a sua imagem
+                this.escolheBebida = function()
+                {
+                    if(this.bebidaNumero == 0)
+                    {
+                        this.bebidaTipo = "beer";
+                        this.bebidaPontuacao = 5 * this.bebidaVelocidade;
+                        this.bebidaImagem.src = 'imagens/good/good_beer3.png';
+                    }
+                    else if(this.bebidaNumero == 1)
+                    {
+                        this.bebidaTipo = "whiskey";
+                        this.bebidaPontuacao = 10 * this.bebidaVelocidade;
+                        this.bebidaImagem.src = 'imagens/good/good_whiskey3.png';
+                    }
+                    else if(this.bebidaNumero == 2)
+                    {
+                        this.bebidaTipo = "colote";
+                        this.bebidaPontuacao = 15 * this.bebidaVelocidade;
+                        this.bebidaImagem.src = 'imagens/good/good_colote3.png';
+                    }
+                    else if(this.bebidaNumero == 3)
+                    {
+                        this.bebidaTipo = "juice";
+                        this.bebidaImagem.src = 'imagens/bad/bad_grape_juice3.png';
+                    }
+                    else if(this.bebidaNumero == 4)
+                    {
+                        this.bebidaTipo = "coffee";
+                        this.bebidaImagem.src = 'imagens/bad/bad_coffee3.png';
+                    }
+                    else if(this.bebidaNumero == 5)
+                    {
+                        this.bebidaTipo = "water";
+                        this.bebidaImagem.src = 'imagens/bad/bad_water3.png';
+                    }
+                }
+                
+
+                //confere se a bebida caiu
+                this.Caiu = function(){
+                    if(this.y < canvas.height - this.bebidaAltura){
+                        this.y += this.bebidaVelocidade;
+                    }
+                    // se caiu, faz o som de queda
+                    else{
+                        listaSonsCaiu[contadorSomCaiu].play();
+                        if(contadorSomCaiu == 4)
+                        {
+                            contadorSomCaiu = 0;
+                        }
+                        else
+                        {
+                            contadorSomCaiu++;
+                        }
+
+                        // se for alcool, diminui o nivel de embriaguez
+                        if(this.bebidaNumero == 0){
+                            estudante.embriaguez -= 20;
+                        }
+                        else if(this.bebidaNumero == 1){
+                            estudante.embriaguez -= 25;
+                        }
+                        else if(this.bebidaNumero == 2){
+                            estudante.embriaguez -= 30;
+                        }
+
+                        //desce uma nova bebida
+                        this.mudaEstado();
+                        this.escolheBebida();
+                    }
+                    
+                    //confere se o estudante bebeu
+                    this.seBebeu();
+                }
+                
+                //se conseguir pegar/beber a bebida
+                this.seBebeu = function()
+                {
+                    if(this.y > estudante.y && this.y < estudante.y+100)
+                    {
+                        if((this.x > estudante.x && this.x < (estudante.x + estudante.imagemLargura)) ||
+                          (this.x + this.bebidaLargura > estudante.x+100 && this.x + this.bebidaLargura < (estudante.x + estudante.imagemLargura-100)))
+                        {
+                            //da o som de engolir
+                            listaSonsBebeu[contadorSomBebeu].play();
+                            if(contadorSomBebeu == 4)
+                            {
+                                contadorSomBebeu = 0;
+                            }
+                            else
+                            {
+                                contadorSomBebeu++;
+                            }
+                            
+                            //se for agua, cafe ou suco de uva, diminui o nivel de embriaguez
+                            if(this.bebidaNumero == 3){
+                                estudante.embriaguez -= 20;
+                            }
+                            else if(this.bebidaNumero == 4){
+                                estudante.embriaguez -= 26;
+                            }
+                            else if(this.bebidaNumero == 5){
+                                estudante.embriaguez -= 33;
+                            }
+
+                            // se for alcool, aumenta o nivel de embriaguez
+                            // se for cerveja, +3
+                            else if(this.bebidaNumero == 0){
+                                if(estudante.embriaguez >= 98){
+                                    estudante.embriaguez = 100;    
+                                }
+                                else{
+                                    estudante.embriaguez += 3;
+                                }
+                            }
+                            // se for whiskey, +6
+                            else if(this.bebidaNumero == 1){
+                                if(estudante.embriaguez >= 95){
+                                    estudante.embriaguez = 100;    
+                                }
+                                else{
+                                    estudante.embriaguez += 6;
+                                }
+                            }
+                            // se for colote, +9
+                            else if(this.bebidaNumero == 2){
+                                if(estudante.embriaguez >= 92){
+                                    estudante.embriaguez = 100;    
+                                }
+                                else{
+                                    estudante.embriaguez += 9;
+                                }
+                            }
+
+                            //atualiza a pontuacao e o num de bebidas coletadas
+                            estudante.pontuacao += this.bebidaPontuacao;
+                            
+                            //desce uma nova bebida
+                            this.mudaEstado();
+                            this.escolheBebida();
+                        }
+                    }
+                }
+                
+                //escolhe a nova bebida e a sua velocidade
+                this.mudaEstado = function()
+                {
+                    this.bebidaNumero = Math.floor(Math.random() * 6);
+                    this.bebidaVelocidade = Math.floor(Math.random() * 3 + 1);
+                    this.x = Math.random() * (canvas.width - this.bebidaLargura);
+                    this.y = Math.random() * -canvas.height - this.bebidaAltura;
+                }
+                
+                this.render = function()
+                {
+                    context.drawImage(this.bebidaImagem, this.x, this.y);
+                }
+            }
+            
+
+
+
+
+
+            /*******************************
+            ********************************
+            DANDO MARGEM PARA INICIAR O JOGO
+            ********************************
+            *******************************/
+
+            //criando o funcionamento da regra da movimentação do personagem atraves das setas
+            window.addEventListener("keydown", function(e){
+                e.preventDefault();            
+                if(e.keyCode == 37)
+                {
+                    estudante.moveLeft();
+                }
+                else if(e.keyCode == 39)
+                {
+                    estudante.moveRight();
+                }
+                else if(e.keyCode == 13 && estudante.fimDeJogo == true)
+                {
+                    main();
+                    window.clearTimeout(timer);
+                }
+            });
+            
+            //chama a main para dar inicio ao jogo
+            main();
+        }
+
+    </script>
+    
+    <!-- posicionando o canvas -->
+    <body style = "background-color: #18191A; margin-left:15%; margin-top:5%;">
+        <p style = "margin-left:8.5%; margin-top:5%;"><img src = "imagens/misc/instrucoes/pegabreja.png"></p>
+        <body>
+            <img src = "imagens/misc/instrucoes/instrucoes.png">
+        </body>
+        <body >
+            <canvas id="backgroundCanvas" width="1024" height="650"></canvas>
+            <canvas id="canvas" width="1024" height="650"></canvas>
+        </body>
+    </body>
+</html>
