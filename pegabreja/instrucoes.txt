@@ -1,0 +1,13 @@
+.______    _______   _______      ___         .______   .______       _______        __       ___      
+|   _  \  |   ____| /  _____|    /   \        |   _  \  |   _  \     |   ____|      |  |     /   \     
+|  |_)  | |  |__   |  |  __     /  ^  \       |  |_)  | |  |_)  |    |  |__         |  |    /  ^  \    
+|   ___/  |   __|  |  | |_ |   /  /_\  \      |   _  <  |      /     |   __|  .--.  |  |   /  /_\  \   
+|  |      |  |____ |  |__| |  /  _____  \     |  |_)  | |  |\  \----.|  |____ |  `--'  |  /  _____  \  
+| _|      |_______| \______| /__/     \__\    |______/  | _| `._____||_______| \______/  /__/     \__\ 
+
+
+Ideia: A ideia acerca do jogo é que o universitário começa bêbado (embriaguez máxima de 100%) e vai ficando sóbrio se pegar bebidas que diminuam a sua embriaguez ou se deixar bebidas alcoólicas caírem, enquanto pegar bebidas alcoólicas deixa ele mais bêbado. O jogo acaba quando ele fica sóbrio (embriaguez menor ou igual a 0%).
+
+Regras: As bebidas que aumentam sua embriaguez são a cerveja, o whiskey e o colote. As bebidas que diminuem sua embriaguez são água, café e suco de uva. Observação: isso está demonstrado na própria tela do jogo, à esquerda.
+
+Como jogar: Para jogar o Pega Breja, basta abrir o arquivo "index.html" no navegador de sua preferência e utilizar as setas para esquerda e para a direita para controlar o personagem, e esperar que a bebida venha em sua direção.
